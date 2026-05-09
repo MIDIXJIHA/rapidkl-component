@@ -64,7 +64,7 @@ class GTFSRealtimeParser {
    */
   parseProtobuf(buffer) {
     try {
-      const feed = GtfsRealtimeBindings.transit_realtime.FeedMessage.decode(new Uint8Array(buffer));
+      const feed = GtfsRealtimeBindings.transit_realtime.FeedMessage.decode(new Uint8Array(Buffer.from(buffer)));
       return this.transformFeed(feed);
     } catch (err) {
       console.error('GTFS parse error:', err);
@@ -73,27 +73,20 @@ class GTFSRealtimeParser {
   }
 
   transformFeed(feed) {
-    return {
-      entity: feed.entity.map(e => {
-
-        if (!e.vehicle || !e.vehicle.position) return null;
-
-        return {
-          id: e.id,
-          vehicle: {
-            trip: e.vehicle.trip,
-            position: {
-              latitude: e.vehicle.position.latitude,
-              longitude: e.vehicle.position.longitude,
-              bearing: e.vehicle.position.bearing,
-              speed: e.vehicle.position.speed
-            },
-            timestamp: e.vehicle.timestamp,
-            currentStopSequence: e.vehicle.currentStopSequence
-          }
-        };
-      }).filter(Boolean)
-    };
+    const vehicles = [];
+    for (const e of feed.entity) {
+      if (!e.vehicle?.position) continue;
+      vehicles.push({
+        id: e.id,
+        lat: e.vehicle.position.latitude,
+        lng: e.vehicle.position.longitude,
+        bearing: e.vehicle.position.bearing || 0,
+        speed: e.vehicle.position.speed || 0,
+        routeId: e.vehicle.trip?.routeId,
+        tripId: e.vehicle.trip?.tripId
+      });
+    }
+    return { vehicles };
   }
 }
 
