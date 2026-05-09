@@ -5,21 +5,24 @@ class GTFSRealtimeParser {
   constructor() {
     this.baseUrl = 'https://api.data.gov.my/gtfs-realtime';
     this.operators = {
-      'ktmb': { name: 'KTMB (Trains)', endpoint: 'vehicle-position/ktmb' },
-      'prasarana-kl-bus': { name: 'Prasarana KL Bus', endpoint: 'vehicle-position/prasarana?category=rapid-bus-kl' },
-      'prasarana-kl-mrt': { name: 'Prasarana KL MRT Feeder', endpoint: 'vehicle-position/prasarana?category=rapid-bus-mrtfeeder' },
-      'prasarana-penang': { name: 'Prasarana Penang', endpoint: 'vehicle-position/prasarana?category=rapid-bus-penang' },
-      'prasarana-kuantan': { name: 'Prasarana Kuantan', endpoint: 'vehicle-position/prasarana?category=rapid-bus-kuantan' },
-      'mybas-kangar': { name: 'BAS.MY Kangar', endpoint: 'vehicle-position/mybas-kangar' },
-      'mybas-alor-setar': { name: 'BAS.MY Alor Setar', endpoint: 'vehicle-position/mybas-alor-setar' },
-      'mybas-kota-bharu': { name: 'BAS.MY Kota Bharu', endpoint: 'vehicle-position/mybas-kota-bharu' },
-      'mybas-terengganu': { name: 'BAS.MY Terengganu', endpoint: 'vehicle-position/mybas-kuala-terengganu' },
-      'mybas-ipoh': { name: 'BAS.MY Ipoh', endpoint: 'vehicle-position/mybas-ipoh' },
-      'mybas-seremban-a': { name: 'BAS.MY Seremban (A)', endpoint: 'vehicle-position/mybas-seremban-a' },
-      'mybas-seremban-b': { name: 'BAS.MY Seremban (B)', endpoint: 'vehicle-position/mybas-seremban-b' },
-      'mybas-melaka': { name: 'BAS.MY Melaka', endpoint: 'vehicle-position/mybas-melaka' },
-      'mybas-johor': { name: 'BAS.MY Johor Bahru', endpoint: 'vehicle-position/mybas-johor' },
-      'mybas-kuching': { name: 'BAS.MY Kuching', endpoint: 'vehicle-position/mybas-kuching' }
+      'ktmb': { name: 'KTMB (Trains)', endpoint: 'vehicle-position/ktmb', category: null },
+      'prasarana-kl-bus': { name: 'Prasarana KL Bus', endpoint: 'vehicle-position/prasarana', category: 'rapid-bus-kl' },
+      'prasarana-kl-lrt': { name: 'Prasarana KL LRT', endpoint: 'vehicle-position/prasarana', category: 'rapid-kl' },
+      'prasarana-kl-mrt': { name: 'Prasarana KL MRT', endpoint: 'vehicle-position/prasarana', category: 'rapid-rail-kl' },
+      'prasarana-kl-monorail': { name: 'Prasarana KL Monorail', endpoint: 'vehicle-position/prasarana', category: 'rapid-kl' },
+      'prasarana-kl-mrt-feeder': { name: 'Prasarana KL MRT Feeder', endpoint: 'vehicle-position/prasarana', category: 'rapid-bus-mrtfeeder' },
+      'prasarana-penang': { name: 'Prasarana Penang', endpoint: 'vehicle-position/prasarana', category: 'rapid-bus-penang' },
+      'prasarana-kuantan': { name: 'Prasarana Kuantan', endpoint: 'vehicle-position/prasarana', category: 'rapid-bus-kuantan' },
+      'mybas-kangar': { name: 'BAS.MY Kangar', endpoint: 'vehicle-position/mybas-kangar', category: null },
+      'mybas-alor-setar': { name: 'BAS.MY Alor Setar', endpoint: 'vehicle-position/mybas-alor-setar', category: null },
+      'mybas-kota-bharu': { name: 'BAS.MY Kota Bharu', endpoint: 'vehicle-position/mybas-kota-bharu', category: null },
+      'mybas-terengganu': { name: 'BAS.MY Terengganu', endpoint: 'vehicle-position/mybas-kuala-terengganu', category: null },
+      'mybas-ipoh': { name: 'BAS.MY Ipoh', endpoint: 'vehicle-position/mybas-ipoh', category: null },
+      'mybas-seremban-a': { name: 'BAS.MY Seremban (A)', endpoint: 'vehicle-position/mybas-seremban-a', category: null },
+      'mybas-seremban-b': { name: 'BAS.MY Seremban (B)', endpoint: 'vehicle-position/mybas-seremban-b', category: null },
+      'mybas-melaka': { name: 'BAS.MY Melaka', endpoint: 'vehicle-position/mybas-melaka', category: null },
+      'mybas-johor': { name: 'BAS.MY Johor Bahru', endpoint: 'vehicle-position/mybas-johor', category: null },
+      'mybas-kuching': { name: 'BAS.MY Kuching', endpoint: 'vehicle-position/mybas-kuching', category: null }
     };
   }
 
@@ -34,6 +37,24 @@ class GTFSRealtimeParser {
   }
 
   /**
+   * Get GTFS static operator ID for realtime operator
+   */
+  getGTFSOperatorId(realtimeOperatorId) {
+    // Map realtime operator IDs to GTFS static operator IDs
+    const mapping = {
+      'ktmb': 'ktmb',
+      'prasarana-kl-bus': 'prasarana-kl',
+      'prasarana-kl-lrt': 'prasarana-kl',
+      'prasarana-kl-mrt': 'prasarana-kl',
+      'prasarana-kl-monorail': 'prasarana-kl',
+      'prasarana-kl-mrt-feeder': 'prasarana-kl',
+      'prasarana-penang': 'prasarana-penang',
+      'prasarana-kuantan': 'prasarana-kuantan'
+    };
+    return mapping[realtimeOperatorId] || realtimeOperatorId;
+  }
+
+  /**
    * Fetch vehicle positions (protobuf format)
    */
   async getVehiclePositions(operatorId) {
@@ -43,7 +64,11 @@ class GTFSRealtimeParser {
     }
 
     try {
-      const url = `${this.baseUrl}/${operator.endpoint}`;
+      let url = `${this.baseUrl}/${operator.endpoint}`;
+      // Add category parameter for Prasarana operators
+      if (operator.category) {
+        url += `?category=${operator.category}`;
+      }
       console.log(`Fetching realtime data from: ${url}`);
 
       const response = await axios.get(url, {
