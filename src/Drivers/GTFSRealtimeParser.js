@@ -1,4 +1,5 @@
 const axios = require('axios');
+const GtfsRealtimeBindings = require('gtfs-realtime-bindings');
 
 class GTFSRealtimeParser {
   constructor() {
@@ -62,10 +63,36 @@ class GTFSRealtimeParser {
    * Full parsing would require gtfs-realtime-bindings
    */
   parseProtobuf(buffer) {
-    // In production, use gtfs-realtime-bindings to parse
+    try {
+      const feed = GtfsRealtimeBindings.transit_realtime.FeedMessage.decode(new Uint8Array(buffer));
+      return this.transformFeed(feed);
+    } catch (err) {
+      console.error('GTFS parse error:', err);
+      return { error: 'Failed to parse GTFS realtime feed', raw: buffer.toString('base64') };
+    }
+  }
+
+  transformFeed(feed) {
     return {
-      rawData: buffer.toString('base64'),
-      message: 'Protobuf data. Use gtfs-realtime-bindings to parse in your client application.'
+      entity: feed.entity.map(e => {
+
+        if (!e.vehicle || !e.vehicle.position) return null;
+
+        return {
+          id: e.id,
+          vehicle: {
+            trip: e.vehicle.trip,
+            position: {
+              latitude: e.vehicle.position.latitude,
+              longitude: e.vehicle.position.longitude,
+              bearing: e.vehicle.position.bearing,
+              speed: e.vehicle.position.speed
+            },
+            timestamp: e.vehicle.timestamp,
+            currentStopSequence: e.vehicle.currentStopSequence
+          }
+        };
+      }).filter(Boolean)
     };
   }
 }
