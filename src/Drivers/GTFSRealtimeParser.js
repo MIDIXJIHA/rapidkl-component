@@ -1,0 +1,73 @@
+const axios = require('axios');
+
+class GTFSRealtimeParser {
+  constructor() {
+    this.baseUrl = 'https://api.data.gov.my/gtfs-realtime';
+    this.operators = {
+      'ktmb': { name: 'KTMB (Trains)', endpoint: 'vehicle-position/ktmb' },
+      'prasarana-kl-bus': { name: 'Prasarana KL Bus', endpoint: 'vehicle-position/prasarana?category=rapid-bus-kl' },
+      'prasarana-kl-mrt': { name: 'Prasarana KL MRT Feeder', endpoint: 'vehicle-position/prasarana?category=rapid-bus-mrtfeeder' },
+      'prasarana-penang': { name: 'Prasarana Penang', endpoint: 'vehicle-position/prasarana?category=rapid-bus-penang' },
+      'prasarana-kuantan': { name: 'Prasarana Kuantan', endpoint: 'vehicle-position/prasarana?category=rapid-bus-kuantan' },
+      'mybas-kangar': { name: 'BAS.MY Kangar', endpoint: 'vehicle-position/mybas-kangar' },
+      'mybas-alor-setar': { name: 'BAS.MY Alor Setar', endpoint: 'vehicle-position/mybas-alor-setar' },
+      'mybas-kota-bharu': { name: 'BAS.MY Kota Bharu', endpoint: 'vehicle-position/mybas-kota-bharu' },
+      'mybas-terengganu': { name: 'BAS.MY Terengganu', endpoint: 'vehicle-position/mybas-kuala-terengganu' },
+      'mybas-ipoh': { name: 'BAS.MY Ipoh', endpoint: 'vehicle-position/mybas-ipoh' },
+      'mybas-seremban-a': { name: 'BAS.MY Seremban (A)', endpoint: 'vehicle-position/mybas-seremban-a' },
+      'mybas-seremban-b': { name: 'BAS.MY Seremban (B)', endpoint: 'vehicle-position/mybas-seremban-b' },
+      'mybas-melaka': { name: 'BAS.MY Melaka', endpoint: 'vehicle-position/mybas-melaka' },
+      'mybas-johor': { name: 'BAS.MY Johor Bahru', endpoint: 'vehicle-position/mybas-johor' },
+      'mybas-kuching': { name: 'BAS.MY Kuching', endpoint: 'vehicle-position/mybas-kuching' }
+    };
+  }
+
+  /**
+   * Get list of available realtime operators
+   */
+  getOperators() {
+    return Object.entries(this.operators).map(([id, op]) => ({
+      id,
+      name: op.name
+    }));
+  }
+
+  /**
+   * Fetch vehicle positions (protobuf format)
+   */
+  async getVehiclePositions(operatorId) {
+    const operator = this.operators[operatorId];
+    if (!operator) {
+      throw new Error(`Unknown operator: ${operatorId}`);
+    }
+
+    try {
+      const url = `${this.baseUrl}/${operator.endpoint}`;
+      console.log(`Fetching realtime data from: ${url}`);
+
+      const response = await axios.get(url, {
+        responseType: 'arraybuffer',
+        timeout: 10000
+      });
+
+      // Return raw protobuf data
+      return response.data;
+    } catch (error) {
+      throw new Error(`Failed to fetch vehicle positions for ${operatorId}: ${error.message}`);
+    }
+  }
+
+  /**
+   * Parse protobuf (simplified - returns raw buffer for now)
+   * Full parsing would require gtfs-realtime-bindings
+   */
+  parseProtobuf(buffer) {
+    // In production, use gtfs-realtime-bindings to parse
+    return {
+      rawData: buffer.toString('base64'),
+      message: 'Protobuf data. Use gtfs-realtime-bindings to parse in your client application.'
+    };
+  }
+}
+
+module.exports = GTFSRealtimeParser;

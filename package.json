@@ -1,0 +1,17 @@
+{
+  "name": "rapidkl-component",
+  "version": "1.0.0",
+  "description": "RapidKL (Malaysia's public transit) API client and data parser",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "node examples/usage.js"
+  },
+  "keywords": ["rapidkl", "malaysia", "transit", "api"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.1",
+    "unzipper": "^0.10.14"
+  }
+}
