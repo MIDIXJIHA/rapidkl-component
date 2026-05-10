@@ -163,6 +163,40 @@ class GTFSParser {
   getAgencies(gtfsData) {
     return gtfsData.agency || [];
   }
+
+  /**
+   * Get shape points for a given shape_id from shapes.txt.
+   * shapes.txt columns: shape_id, shape_pt_lat, shape_pt_lon, shape_pt_sequence, shape_dist_traveled
+   * Returns points ordered by shape_pt_sequence as [lat, lng] arrays.
+   */
+  getShapePoints(gtfsData, shapeId) {
+    return (gtfsData.shapes || [])
+      .filter(s => s.shape_id === shapeId)
+      .sort((a, b) => parseInt(a.shape_pt_sequence) - parseInt(b.shape_pt_sequence))
+      .map(s => [parseFloat(s.shape_pt_lat), parseFloat(s.shape_pt_lon)]);
+  }
+
+  /**
+   * Get the shape_id for a trip
+   */
+  getShapeIdForTrip(gtfsData, tripId) {
+    const trip = (gtfsData.trips || []).find(t => t.trip_id === tripId);
+    return trip ? trip.shape_id : null;
+  }
+
+  /**
+   * Get shape points for a route by finding the first trip that has a shape_id
+   */
+  getRouteShape(gtfsData, routeId) {
+    const trips = this.getTripsForRoute(gtfsData, routeId);
+    for (const trip of trips) {
+      if (trip.shape_id) {
+        const points = this.getShapePoints(gtfsData, trip.shape_id);
+        if (points.length > 1) return points;
+      }
+    }
+    return [];
+  }
 }
 
 module.exports = GTFSParser;

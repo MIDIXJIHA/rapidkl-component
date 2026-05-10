@@ -94,6 +94,14 @@ class GTFSService {
   }
 
   /**
+   * Get shape polyline points for a route (from shapes.txt)
+   */
+  async getRouteShape(operatorId, routeId) {
+    const gtfsData = await this.loadGTFSData(operatorId);
+    return this.parser.getRouteShape(gtfsData, routeId);
+  }
+
+  /**
    * Get schedule for a stop on a route
    */
   async getSchedule(operatorId, routeId, stopId) {
