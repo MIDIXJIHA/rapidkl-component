@@ -74,31 +74,23 @@ class GTFSService {
   /**
    * Get stops for a route
    */
-  // async getRouteStops(operatorId, routeId) {
-  //   const gtfsData = await this.loadGTFSData(operatorId);
-  //   const trips = this.parser.getTripsForRoute(gtfsData, routeId);
-  //   if (trips.length === 0) { return []; }
-  //   const firstTrip = trips[0];
-  //   const stopTimes = this.parser.getStopTimesForTrip(gtfsData, firstTrip.trip_id);
-  //   const stops = this.parser.getStops(gtfsData);
-  //   return stopTimes.map(st => { const stop = stops.find(s => s.stop_id === st.stop_id);
-  //   if (!stop) return null;
-  //   return {...stop, stop_sequence: Number(st.stop_sequence)};}).filter(Boolean);
-  // }
   async getRouteStops(operatorId, routeId) {
-    const gtfsData = await this.loadGTFSData(operatorId); console.log('\n========== ROUTE DEBUG =========='); console.log('operatorId:', operatorId); console.log('routeId:', routeId);
-    const trips = this.parser.getTripsForRoute(gtfsData, routeId); console.log('Trips found:', trips.length); console.log('First 3 trips:', trips.slice(0,3));
-    if (!trips.length) { console.log('NO TRIPS FOUND'); return []; }
-    const firstTrip = trips[0]; console.log('First trip:', firstTrip);
-    const stopTimes = this.parser.getStopTimesForTrip(gtfsData, firstTrip.trip_id); console.log('StopTimes count:', stopTimes.length); console.log('First 5 stopTimes:', stopTimes.slice(0,5));
-    const stops = this.parser.getStops(gtfsData); console.log('Stops count:', stops.length); console.log('First 5 stops:', stops.slice(0,5));
-    const merged = stopTimes.map(st => {
-      const stop = stops.find(s => s.stop_id === st.stop_id);
-      if (!stop) { console.log('STOP NOT FOUND:', st.stop_id); return null; }
-      return { ...stop, stop_sequence: Number(st.stop_sequence || st.stop_sequence || 0) };
+    const gtfsData = await this.loadGTFSData(operatorId);
+    const trips = this.parser.getTripsForRoute(gtfsData, routeId);
+    if (!trips.length) return [];
+    const firstTrip = trips[0];
+    const stopTimes = this.parser.getStopTimesForTrip(gtfsData, firstTrip.trip_id);
+    const rawStops = gtfsData.stops || [];
+    return stopTimes.map(st => {
+      const stop = rawStops.find(s => s.stop_id === st.stop_id);
+      if (!stop) return null;
+      return {
+        ...stop,
+        stop_sequence: Number(st.stop_sequence || 0),
+        stop_lat: parseFloat(stop.stop_lat),
+        stop_lon: parseFloat(stop.stop_lon),
+      };
     }).filter(Boolean);
-    console.log('Merged stops:', merged.length); console.log('First 5 merged:', merged.slice(0,5)); console.log('========== END DEBUG ==========\n');
-    return merged;
   }
 
   /**
