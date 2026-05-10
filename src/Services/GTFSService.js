@@ -77,17 +77,13 @@ class GTFSService {
   async getRouteStops(operatorId, routeId) {
     const gtfsData = await this.loadGTFSData(operatorId);
     const trips = this.parser.getTripsForRoute(gtfsData, routeId);
-
-    if (trips.length === 0) return [];
-
-    // Get stops from first trip
+    if (trips.length === 0) { return []; }
     const firstTrip = trips[0];
     const stopTimes = this.parser.getStopTimesForTrip(gtfsData, firstTrip.trip_id);
     const stops = this.parser.getStops(gtfsData);
-
-    return stopTimes
-      .map(st => stops.find(s => s.id === st.stop_id))
-      .filter(Boolean);
+    return stopTimes.map(st => { const stop = stops.find(s => s.stop_id === st.stop_id);
+    if (!stop) return null;
+    return {...stop, stop_sequence: Number(st.stop_sequence)};}).filter(Boolean);
   }
 
   /**

@@ -7,9 +7,9 @@ class GTFSRealtimeParser {
     this.operators = {
       'ktmb': { name: 'KTMB (Trains)', endpoint: 'vehicle-position/ktmb', category: null },
       'prasarana-kl-bus': { name: 'Prasarana KL Bus', endpoint: 'vehicle-position/prasarana', category: 'rapid-bus-kl' },
-      'prasarana-kl-lrt': { name: 'Prasarana KL LRT', endpoint: 'vehicle-position/prasarana', category: 'rapid-kl' },
-      'prasarana-kl-mrt': { name: 'Prasarana KL MRT', endpoint: 'vehicle-position/prasarana', category: 'rapid-rail-kl' },
-      'prasarana-kl-monorail': { name: 'Prasarana KL Monorail', endpoint: 'vehicle-position/prasarana', category: 'rapid-kl' },
+      // 'prasarana-kl-lrt': { name: 'Prasarana KL LRT', endpoint: 'vehicle-position/prasarana', category: 'rapid-kl' },
+      // 'prasarana-kl-mrt': { name: 'Prasarana KL MRT', endpoint: 'vehicle-position/prasarana', category: 'rapid-rail-kl' },
+      // 'prasarana-kl-monorail': { name: 'Prasarana KL Monorail', endpoint: 'vehicle-position/prasarana', category: 'rapid-kl' },
       'prasarana-kl-mrt-feeder': { name: 'Prasarana KL MRT Feeder', endpoint: 'vehicle-position/prasarana', category: 'rapid-bus-mrtfeeder' },
       'prasarana-penang': { name: 'Prasarana Penang', endpoint: 'vehicle-position/prasarana', category: 'rapid-bus-penang' },
       'prasarana-kuantan': { name: 'Prasarana Kuantan', endpoint: 'vehicle-position/prasarana', category: 'rapid-bus-kuantan' },
